@@ -66,8 +66,8 @@
     font-size: 0.75rem;
     color: #ccc;
     letter-spacing: 0.04em;
-    opacity: 0.75;
-    transition: opacity 0.2s ease;
+    opacity: 0;
+    transition: opacity 150ms ease-in;
     pointer-events: none;
     z-index: 2;
   }
@@ -79,12 +79,19 @@
     height: 22px;
     accent-color: #ffd700;
     cursor: pointer;
-    opacity: 0.75;
-    transition: opacity 0.2s ease;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 150ms ease-in;
     z-index: 2;
   }
-  .stage:hover .sound-badge { opacity: 1; }
-  .stage:hover #volume { opacity: 1; }
+  .stage:hover .sound-badge,
+  .stage:focus-within .sound-badge { opacity: 1; transition-timing-function: ease-out; }
+  .stage:hover #volume,
+  .stage:focus-within #volume { opacity: 1; pointer-events: auto; transition-timing-function: ease-out; }
+  #volume:focus-visible {
+    outline: 2px solid #ffd700;
+    outline-offset: 2px;
+  }
   .stage:focus-visible {
     outline: 2px solid #ffd700;
     outline-offset: 3px;
