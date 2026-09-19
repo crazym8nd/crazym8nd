@@ -71,7 +71,20 @@
     pointer-events: none;
     z-index: 2;
   }
+  #volume {
+    position: absolute;
+    right: 12px;
+    bottom: 38px;
+    width: 82px;
+    height: 22px;
+    accent-color: #ffd700;
+    cursor: pointer;
+    opacity: 0.75;
+    transition: opacity 0.2s ease;
+    z-index: 2;
+  }
   .stage:hover .sound-badge { opacity: 1; }
+  .stage:hover #volume { opacity: 1; }
   .stage:focus-visible {
     outline: 2px solid #ffd700;
     outline-offset: 3px;
@@ -93,6 +106,7 @@
 
     <div class="stage" id="stage" role="button" tabindex="0" aria-label="Enable sound" title="Click to toggle sound">
       <video id="video" src="z0r8.mp4" poster="../z0r8.gif" loop playsinline autoplay muted preload="auto"></video>
+      <input type="range" id="volume" min="0" max="1" step="0.01" value="0.2" aria-label="Volume">
       <div class="sound-badge" id="soundBadge">Sound OFF</div>
     </div>
 
@@ -111,6 +125,7 @@
     const stage = document.getElementById('stage');
     const video = document.getElementById('video');
     const badge = document.getElementById('soundBadge');
+    const volume = document.getElementById('volume');
 
     // Browsers block autoplay with sound — start muted at low volume;
     // clicking the animation toggles the sound (user gesture).
@@ -129,6 +144,15 @@
     }
 
     stage.addEventListener('click', toggleSound);
+    volume.addEventListener('click', (event) => event.stopPropagation());
+    volume.addEventListener('input', (event) => {
+      video.volume = Number(event.target.value);
+      if (video.volume > 0 && video.muted) {
+        video.muted = false;
+        video.play().catch(() => {});
+      }
+      update();
+    });
     stage.addEventListener('keydown', (event) => {
       if (event.key === 'Enter' || event.key === ' ') {
         event.preventDefault();
