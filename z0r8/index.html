@@ -45,6 +45,7 @@
     border: 1px solid #222;
     border-radius: 6px;
     overflow: hidden;
+    cursor: pointer;
   }
   .stage video {
     position: absolute;
@@ -52,41 +53,28 @@
     width: 100%;
     height: 100%;
     display: block;
+    pointer-events: none;
   }
-  .controls {
+  .sound-badge {
     position: absolute;
     bottom: 10px;
     right: 10px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 6px 12px;
+    padding: 4px 10px;
     background: rgba(0,0,0,0.55);
     border: 1px solid rgba(255,255,255,0.12);
     border-radius: 999px;
-    backdrop-filter: blur(4px);
+    font-size: 0.75rem;
+    color: #ccc;
+    letter-spacing: 0.04em;
     opacity: 0.75;
     transition: opacity 0.2s ease;
+    pointer-events: none;
     z-index: 2;
   }
-  .stage:hover .controls { opacity: 1; }
-  #muteBtn {
-    background: none;
-    border: none;
-    color: #fff;
-    font-size: 1rem;
-    line-height: 1;
-    cursor: pointer;
-    padding: 2px;
-    display: flex;
-    align-items: center;
-    transition: transform 0.1s ease;
-  }
-  #muteBtn:hover { transform: scale(1.15); }
-  #volume {
-    width: 80px;
-    accent-color: #ffd700;
-    cursor: pointer;
+  .stage:hover .sound-badge { opacity: 1; }
+  .stage:focus-visible {
+    outline: 2px solid #ffd700;
+    outline-offset: 3px;
   }
   .credits {
     margin-top: 24px;
@@ -103,12 +91,9 @@
   <div class="wrap">
     <a class="back-link" href="https://github.com/crazym8nd">← Back to profile</a>
 
-    <div class="stage">
+    <div class="stage" id="stage" role="button" tabindex="0" aria-label="Enable sound" title="Click to toggle sound">
       <video id="video" src="z0r8.mp4" poster="../z0r8.gif" loop playsinline autoplay muted preload="auto"></video>
-      <div class="controls">
-        <button id="muteBtn" aria-label="Mute / unmute">🔇</button>
-        <input type="range" id="volume" min="0" max="1" step="0.01" value="0.2" aria-label="Volume">
-      </div>
+      <div class="sound-badge" id="soundBadge">Sound OFF</div>
     </div>
 
     <div class="credits">
@@ -123,31 +108,32 @@
   </div>
 
   <script>
+    const stage = document.getElementById('stage');
     const video = document.getElementById('video');
-    const muteBtn = document.getElementById('muteBtn');
-    const volume = document.getElementById('volume');
+    const badge = document.getElementById('soundBadge');
 
     // Browsers block autoplay with sound — start muted at low volume;
-    // the speaker button or the slider enables sound (user gesture).
+    // clicking the animation toggles the sound (user gesture).
     video.volume = 0.2;
 
     function update() {
-      muteBtn.textContent = video.muted ? '🔇' : '🔊';
+      const isMuted = video.muted;
+      badge.textContent = isMuted ? 'Sound OFF' : 'Sound ON';
+      stage.setAttribute('aria-label', isMuted ? 'Enable sound' : 'Mute sound');
     }
 
-    muteBtn.addEventListener('click', () => {
+    function toggleSound() {
       video.muted = !video.muted;
       if (!video.muted) video.play().catch(() => {});
       update();
-    });
+    }
 
-    volume.addEventListener('input', () => {
-      video.volume = parseFloat(volume.value);
-      if (video.volume > 0 && video.muted) {
-        video.muted = false;
-        video.play().catch(() => {});
+    stage.addEventListener('click', toggleSound);
+    stage.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        toggleSound();
       }
-      update();
     });
 
     video.addEventListener('volumechange', update);
