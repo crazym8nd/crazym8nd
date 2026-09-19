@@ -55,6 +55,29 @@
     display: block;
     pointer-events: none;
   }
+  #soundButton {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    padding: 12px 18px;
+    border: 1px solid #ffd700;
+    border-radius: 999px;
+    background: rgba(0, 0, 0, 0.78);
+    color: #ffd700;
+    font: inherit;
+    font-size: 0.9rem;
+    cursor: pointer;
+    z-index: 3;
+    transition: background 150ms ease, color 150ms ease, transform 150ms ease;
+  }
+  #soundButton:hover { background: #ffd700; color: #000; }
+  #soundButton:focus-visible {
+    outline: 2px solid #fff;
+    outline-offset: 3px;
+  }
+  #soundButton:active { transform: translate(-50%, -50%) scale(0.97); }
+  #soundButton[hidden] { display: none; }
   .sound-badge {
     position: absolute;
     bottom: 10px;
@@ -111,45 +134,58 @@
 
     <div class="stage" id="stage" role="button" tabindex="0" aria-label="Enable sound" title="Click to toggle sound">
       <video id="video" src="z0r8.mp4" poster="../z0r8.gif" loop playsinline autoplay muted preload="auto"></video>
+      <button id="soundButton" type="button">▶ Enable sound</button>
       <input type="range" id="volume" min="0" max="1" step="0.01" value="0.2" aria-label="Volume">
       <div class="sound-badge" id="soundBadge">Sound OFF</div>
     </div>
 
     <div class="credits">
-      <p>Original: <a href="https://z0r.de/8" target="_blank" rel="noopener">z0r.de/8</a> · visual: inkoddi — <i>nickelmetallhydrid</i> · music: maf leonised — <i>aspirine (Aspirine.mod)</i> · credits: <a href="https://index.z0r.de/" target="_blank" rel="noopener">index.z0r.de</a> · rendered with <a href="https://ruffle.rs/" target="_blank" rel="noopener">Ruffle</a></p>
+      <p>Original: <a href="https://z0r.de/8" target="_blank" rel="noopener">z0r.de/8</a> · visual: inkoddi — <i>nickelmetallhydrid</i> · music: maf leonised — <i>aspirine (Aspirine.mod)</i> · credits: <a href="https://index.z0r.de/" target="_blank" rel="noopener">z0r.de</a></p>
     </div>
   </div>
 
   <script>
     const stage = document.getElementById('stage');
     const video = document.getElementById('video');
+    const soundButton = document.getElementById('soundButton');
     const badge = document.getElementById('soundBadge');
     const volume = document.getElementById('volume');
 
-    // Browsers block autoplay with sound — start muted at low volume;
-    // clicking the animation toggles the sound (user gesture).
     video.volume = 0.2;
 
     function update() {
       const isMuted = video.muted;
       badge.textContent = isMuted ? 'Sound OFF' : 'Sound ON';
       stage.setAttribute('aria-label', isMuted ? 'Enable sound' : 'Mute sound');
+      soundButton.hidden = !isMuted;
+    }
+
+    function enableSound() {
+      video.muted = false;
+      video.play().then(update).catch(() => {
+        video.muted = true;
+        update();
+      });
     }
 
     function toggleSound() {
-      video.muted = !video.muted;
-      if (!video.muted) video.play().catch(() => {});
-      update();
+      if (video.muted) {
+        enableSound();
+      } else {
+        video.muted = true;
+        update();
+      }
     }
 
+    soundButton.addEventListener('click', (event) => {
+      event.stopPropagation();
+      enableSound();
+    });
     stage.addEventListener('click', toggleSound);
     volume.addEventListener('click', (event) => event.stopPropagation());
     volume.addEventListener('input', (event) => {
       video.volume = Number(event.target.value);
-      if (video.volume > 0 && video.muted) {
-        video.muted = false;
-        video.play().catch(() => {});
-      }
+      if (video.volume > 0 && video.muted) enableSound();
       update();
     });
     stage.addEventListener('keydown', (event) => {
